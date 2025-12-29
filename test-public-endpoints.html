@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test EasyBuy Public Endpoints</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        input, button {
+            margin: 5px 0;
+            padding: 8px;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            padding: 10px 20px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .response {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 3px;
+            white-space: pre-wrap;
+        }
+        .error {
+            background: #ffebee;
+            color: #c62828;
+        }
+        .success {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test EasyBuy Public Endpoints</h1>
+
+    <div class="section">
+        <h2>1. Admin Login (Public)</h2>
+        <p>This endpoint is PUBLIC - no auth required</p>
+        <input type="text" id="username" placeholder="Username" value="admin"><br>
+        <input type="password" id="password" placeholder="Password" value="password"><br>
+        <button onclick="testAdminLogin()">Test Admin Login</button>
+        <div id="loginResponse" class="response"></div>
+    </div>
+
+    <div class="section">
+        <h2>2. Create Order (Public)</h2>
+        <p>This endpoint is PUBLIC - customers can create orders without authentication</p>
+        <input type="text" id="customerName" placeholder="Customer Name" value="John Doe"><br>
+        <input type="text" id="customerPhone" placeholder="Customer Phone" value="01712345678"><br>
+        <input type="text" id="customerAddress" placeholder="Customer Address" value="Dhaka, Bangladesh"><br>
+        <input type="number" id="quantity" placeholder="Quantity" value="2"><br>
+        <input type="number" id="unitPrice" placeholder="Unit Price" value="500"><br>
+        <input type="number" id="deliveryCharge" placeholder="Delivery Charge" value="60"><br>
+        <button onclick="testCreateOrder()">Create Order</button>
+        <div id="orderResponse" class="response"></div>
+    </div>
+
+    <script>
+        const BASE_URL = 'http://127.0.0.1:54321/functions/v1';
+
+        async function testAdminLogin() {
+            const responseDiv = document.getElementById('loginResponse');
+            responseDiv.textContent = 'Loading...';
+
+            try {
+                const response = await fetch(`${BASE_URL}/admin-login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        username: document.getElementById('username').value,
+                        password: document.getElementById('password').value
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    responseDiv.className = 'response success';
+                    responseDiv.textContent = JSON.stringify(data, null, 2);
+                    // Save token to localStorage for testing protected endpoints
+                    localStorage.setItem('authToken', data.token);
+                } else {
+                    responseDiv.className = 'response error';
+                    responseDiv.textContent = JSON.stringify(data, null, 2);
+                }
+            } catch (error) {
+                responseDiv.className = 'response error';
+                responseDiv.textContent = 'Error: ' + error.message;
+            }
+        }
+
+        async function testCreateOrder() {
+            const responseDiv = document.getElementById('orderResponse');
+            responseDiv.textContent = 'Loading...';
+
+            const quantity = parseInt(document.getElementById('quantity').value);
+            const unitPrice = parseFloat(document.getElementById('unitPrice').value);
+            const deliveryCharge = parseFloat(document.getElementById('deliveryCharge').value);
+            const subtotal = quantity * unitPrice;
+            const total = subtotal + deliveryCharge;
+
+            try {
+                const response = await fetch(`${BASE_URL}/create-order`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        customer_name: document.getElementById('customerName').value,
+                        customer_phone: document.getElementById('customerPhone').value,
+                        customer_address: document.getElementById('customerAddress').value,
+                        quantity: quantity,
+                        unit_price: unitPrice,
+                        delivery_charge: deliveryCharge,
+                        subtotal: subtotal,
+                        total: total
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    responseDiv.className = 'response success';
+                    responseDiv.textContent = JSON.stringify(data, null, 2);
+                } else {
+                    responseDiv.className = 'response error';
+                    responseDiv.textContent = JSON.stringify(data, null, 2);
+                }
+            } catch (error) {
+                responseDiv.className = 'response error';
+                responseDiv.textContent = 'Error: ' + error.message;
+            }
+        }
+    </script>
+
+    <hr style="margin: 40px 0;">
+
+    <div class="section">
+        <h2>Important Notes</h2>
+        <ul>
+            <li><strong>Public Endpoints (No Auth Required):</strong>
+                <ul>
+                    <li>POST /admin-login - Admin authentication</li>
+                    <li>POST /create-order - Create a new order</li>
+                </ul>
+            </li>
+            <li><strong>Protected Endpoints (Require JWT Token):</strong>
+                <ul>
+                    <li>GET /get-orders - Get all orders</li>
+                    <li>GET /get-order - Get single order</li>
+                    <li>PUT /update-order - Update order</li>
+                    <li>DELETE /delete-order - Delete order</li>
+                    <li>POST /dispatch-order - Dispatch to Steadfast</li>
+                    <li>GET /track-order - Track order</li>
+                    <li>GET /dashboard-stats - Dashboard statistics</li>
+                </ul>
+            </li>
+            <li><strong>Before Testing:</strong>
+                <ol>
+                    <li>Make sure Supabase is running: <code>supabase start</code></li>
+                    <li>Make sure functions are deployed locally: <code>supabase functions serve</code></li>
+                    <li>Make sure the orders table exists in your database</li>
+                    <li>Disable RLS on orders table OR add policies for anonymous access</li>
+                </ol>
+            </li>
+        </ul>
+    </div>
+</body>
+</html>

@@ -1,0 +1,27 @@
+-- Disable Row Level Security on orders table to allow public access
+-- This allows the create-order edge function to insert without authentication
+-- WARNING: In production, you should enable RLS and create proper policies
+ALTER TABLE orders DISABLE ROW LEVEL SECURITY;
+
+-- Alternative: If you want to keep RLS enabled but allow public inserts:
+-- ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
+--
+-- CREATE POLICY "Allow public insert" ON orders
+--   FOR INSERT
+--   TO anon
+--   WITH CHECK (true);
+--
+-- CREATE POLICY "Allow authenticated read" ON orders
+--   FOR SELECT
+--   TO authenticated
+--   USING (true);
+--
+-- CREATE POLICY "Allow authenticated update" ON orders
+--   FOR UPDATE
+--   TO authenticated
+--   USING (true);
+--
+-- CREATE POLICY "Allow authenticated delete" ON orders
+--   FOR DELETE
+--   TO authenticated
+--   USING (true);

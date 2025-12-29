@@ -1,0 +1,13 @@
+{
+  "tasks": {
+    "start": "supabase start",
+    "stop": "supabase stop",
+    "serve": "supabase functions serve",
+    "deploy": "supabase functions deploy",
+    "deploy-all": "supabase functions deploy admin-login && supabase functions deploy create-order && supabase functions deploy get-orders && supabase functions deploy get-order && supabase functions deploy update-order && supabase functions deploy delete-order && supabase functions deploy dispatch-order && supabase functions deploy track-order && supabase functions deploy dashboard-stats"
+  },
+  "imports": {
+    "supabase": "https://esm.sh/@supabase/supabase-js@2",
+    "djwt": "https://deno.land/x/djwt@v3.0.0/mod.ts"
+  }
+}
