@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test EasyBuy API - New Structure</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        h1 { color: #333; }
+        .section {
+            background: white;
+            margin-bottom: 20px;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .section h2 {
+            margin-top: 0;
+            color: #2196F3;
+        }
+        input, select, button {
+            margin: 5px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: calc(100% - 22px);
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            width: auto;
+            padding: 10px 30px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .public { border-left: 4px solid #4CAF50; }
+        .protected { border-left: 4px solid #FF9800; }
+        .response {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .error {
+            background: #ffebee;
+            color: #c62828;
+        }
+        .success {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        .token-display {
+            background: #fff3cd;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            word-break: break-all;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .badge.public {
+            background: #4CAF50;
+            color: white;
+        }
+        .badge.protected {
+            background: #FF9800;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1>EasyBuy API Tester - New Structure</h1>
+    <p><strong>Base URL:</strong> <span id="baseUrl">http://127.0.0.1:54321/functions/v1</span></p>
+    <div class="token-display" id="tokenDisplay" style="display: none;">
+        <strong>Current Token:</strong> <span id="tokenValue"></span>
+    </div>
+
+    <!-- ADMIN ENDPOINTS -->
+    <div class="section public">
+        <h2>POST /admin/login <span class="badge public">PUBLIC</span></h2>
+        <input type="text" id="adminUsername" placeholder="Username" value="admin">
+        <input type="password" id="adminPassword" placeholder="Password" value="password">
+        <button onclick="adminLogin()">Login</button>
+        <div id="loginResponse" class="response"></div>
+    </div>
+
+    <div class="section protected">
+        <h2>GET /admin/stats <span class="badge protected">PROTECTED</span></h2>
+        <button onclick="getAdminStats()">Get Dashboard Stats</button>
+        <div id="statsResponse" class="response"></div>
+    </div>
+
+    <!-- PUBLIC ORDER CREATION -->
+    <div class="section public">
+        <h2>POST /create-order <span class="badge public">PUBLIC</span></h2>
+        <input type="text" id="pubCustomerName" placeholder="Customer Name" value="John Doe">
+        <input type="text" id="pubCustomerPhone" placeholder="Phone" value="01712345678">
+        <input type="text" id="pubCustomerAddress" placeholder="Address" value="Dhaka, Bangladesh">
+        <input type="number" id="pubQuantity" placeholder="Quantity" value="2">
+        <input type="number" id="pubUnitPrice" placeholder="Unit Price" value="500">
+        <input type="number" id="pubDeliveryCharge" placeholder="Delivery Charge" value="60">
+        <button onclick="createPublicOrder()">Create Order (Public)</button>
+        <div id="publicOrderResponse" class="response"></div>
+    </div>
+
+    <!-- ORDERS ENDPOINTS -->
+    <div class="section protected">
+        <h2>GET /orders <span class="badge protected">PROTECTED</span></h2>
+        <input type="text" id="filterStatus" placeholder="Status (optional)">
+        <input type="text" id="filterSearch" placeholder="Search (optional)">
+        <input type="number" id="filterPage" placeholder="Page" value="1">
+        <input type="number" id="filterLimit" placeholder="Limit" value="20">
+        <button onclick="getAllOrders()">Get All Orders</button>
+        <div id="getAllResponse" class="response"></div>
+    </div>
+
+    <div class="section protected">
+        <h2>GET /orders/:id <span class="badge protected">PROTECTED</span></h2>
+        <input type="number" id="getOrderId" placeholder="Order ID" value="1">
+        <button onclick="getOrderById()">Get Order</button>
+        <div id="getByIdResponse" class="response"></div>
+    </div>
+
+    <div class="section protected">
+        <h2>POST /orders <span class="badge protected">PROTECTED</span></h2>
+        <input type="text" id="createCustomerName" placeholder="Customer Name" value="Jane Smith">
+        <input type="text" id="createCustomerPhone" placeholder="Phone" value="01812345678">
+        <input type="text" id="createCustomerAddress" placeholder="Address" value="Chittagong">
+        <input type="number" id="createQuantity" placeholder="Quantity" value="1">
+        <input type="number" id="createUnitPrice" placeholder="Unit Price" value="1000">
+        <input type="number" id="createDeliveryCharge" placeholder="Delivery Charge" value="80">
+        <button onclick="createOrder()">Create Order (Admin)</button>
+        <div id="createResponse" class="response"></div>
+    </div>
+
+    <div class="section protected">
+        <h2>PUT /orders/:id <span class="badge protected">PROTECTED</span></h2>
+        <input type="number" id="updateOrderId" placeholder="Order ID" value="1">
+        <input type="text" id="updateStatus" placeholder="New Status" value="confirmed">
+        <button onclick="updateOrder()">Update Order</button>
+        <div id="updateResponse" class="response"></div>
+    </div>
+
+    <div class="section protected">
+        <h2>DELETE /orders/:id <span class="badge protected">PROTECTED</span></h2>
+        <input type="number" id="deleteOrderId" placeholder="Order ID" value="1">
+        <button onclick="deleteOrder()">Delete Order</button>
+        <div id="deleteResponse" class="response"></div>
+    </div>
+
+    <div class="section protected">
+        <h2>POST /orders/:id/dispatch <span class="badge protected">PROTECTED</span></h2>
+        <input type="number" id="dispatchOrderId" placeholder="Order ID" value="1">
+        <button onclick="dispatchOrder()">Dispatch to Steadfast</button>
+        <div id="dispatchResponse" class="response"></div>
+    </div>
+
+    <div class="section protected">
+        <h2>GET /orders/:id/track <span class="badge protected">PROTECTED</span></h2>
+        <input type="number" id="trackOrderId" placeholder="Order ID" value="1">
+        <button onclick="trackOrder()">Track Order</button>
+        <div id="trackResponse" class="response"></div>
+    </div>
+
+    <script>
+        const BASE_URL = 'http://127.0.0.1:54321/functions/v1';
+        let authToken = localStorage.getItem('easybuy_token');
+
+        // Update token display
+        function updateTokenDisplay() {
+            const tokenDisplay = document.getElementById('tokenDisplay');
+            const tokenValue = document.getElementById('tokenValue');
+            if (authToken) {
+                tokenDisplay.style.display = 'block';
+                tokenValue.textContent = authToken.substring(0, 50) + '...';
+            } else {
+                tokenDisplay.style.display = 'none';
+            }
+        }
+        updateTokenDisplay();
+
+        // Admin Login
+        async function adminLogin() {
+            const responseDiv = document.getElementById('loginResponse');
+            responseDiv.textContent = 'Loading...';
+
+            try {
+                const response = await fetch(`${BASE_URL}/admin/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: document.getElementById('adminUsername').value,
+                        password: document.getElementById('adminPassword').value
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    responseDiv.className = 'response success';
+                    responseDiv.textContent = JSON.stringify(data, null, 2);
+                    authToken = data.token;
+                    localStorage.setItem('easybuy_token', authToken);
+                    updateTokenDisplay();
+                    alert('Login successful! Token saved.');
+                } else {
+                    responseDiv.className = 'response error';
+                    responseDiv.textContent = JSON.stringify(data, null, 2);
+                }
+            } catch (error) {
+                responseDiv.className = 'response error';
+                responseDiv.textContent = 'Error: ' + error.message;
+            }
+        }
+
+        // Get Admin Stats
+        async function getAdminStats() {
+            const responseDiv = document.getElementById('statsResponse');
+            if (!authToken) {
+                responseDiv.className = 'response error';
+                responseDiv.textContent = 'Please login first!';
+                return;
+            }
+
+            responseDiv.textContent = 'Loading...';
+
+            try {
+                const response = await fetch(`${BASE_URL}/admin/stats`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    responseDiv.className = 'response success';
+                    responseDiv.textContent = JSON.stringify(data, null, 2);
+                } else {
+                    responseDiv.className = 'response error';
+                    responseDiv.textContent = JSON.stringify(data, null, 2);
+                }
+            } catch (error) {
+                responseDiv.className = 'response error';
+                responseDiv.textContent = 'Error: ' + error.message;
+            }
+        }
+
+        // Create Public Order
+        async function createPublicOrder() {
+            const responseDiv = document.getElementById('publicOrderResponse');
+            responseDiv.textContent = 'Loading...';
+
+            const quantity = parseInt(document.getElementById('pubQuantity').value);
+            const unitPrice = parseFloat(document.getElementById('pubUnitPrice').value);
+            const deliveryCharge = parseFloat(document.getElementById('pubDeliveryCharge').value);
+
+            try {
+                const response = await fetch(`${BASE_URL}/create-order`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        customer_name: document.getElementById('pubCustomerName').value,
+                        customer_phone: document.getElementById('pubCustomerPhone').value,
+                        customer_address: document.getElementById('pubCustomerAddress').value,
+                        quantity,
+                        unit_price: unitPrice,
+                        delivery_charge: deliveryCharge,
+                        subtotal: quantity * unitPrice,
+                        total: (quantity * unitPrice) + deliveryCharge
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    responseDiv.className = 'response success';
+                    responseDiv.textContent = JSON.stringify(data, null, 2);
+                } else {
+                    responseDiv.className = 'response error';
+                    responseDiv.textContent = JSON.stringify(data, null, 2);
+                }
+            } catch (error) {
+                responseDiv.className = 'response error';
+                responseDiv.textContent = 'Error: ' + error.message;
+            }
+        }
+
+        // Get All Orders
+        async function getAllOrders() {
+            const responseDiv = document.getElementById('getAllResponse');
+            if (!authToken) {
+                responseDiv.className = 'response error';
+                responseDiv.textContent = 'Please login first!';
+                return;
+            }
+
+            responseDiv.textContent = 'Loading...';
+
+            const params = new URLSearchParams();
+            if (document.getElementById('filterStatus').value) params.append('status', document.getElementById('filterStatus').value);
+            if (document.getElementById('filterSearch').value) params.append('search', document.getElementById('filterSearch').value);
+            params.append('page', document.getElementById('filterPage').value);
+            params.append('limit', document.getElementById('filterLimit').value);
+
+            try {
+                const response = await fetch(`${BASE_URL}/orders?${params}`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    responseDiv.className = 'response success';
+                    responseDiv.textContent = JSON.stringify(data, null, 2);
+                } else {
+                    responseDiv.className = 'response error';
+                    responseDiv.textContent = JSON.stringify(data, null, 2);
+                }
+            } catch (error) {
+                responseDiv.className = 'response error';
+                responseDiv.textContent = 'Error: ' + error.message;
+            }
+        }
+
+        // Get Order By ID
+        async function getOrderById() {
+            const responseDiv = document.getElementById('getByIdResponse');
+            if (!authToken) {
+                responseDiv.className = 'response error';
+                responseDiv.textContent = 'Please login first!';
+                return;
+            }
+
+            const id = document.getElementById('getOrderId').value;
+            responseDiv.textContent = 'Loading...';
+
+            try {
+                const response = await fetch(`${BASE_URL}/orders/${id}`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    responseDiv.className = 'response success';
+                    responseDiv.textContent = JSON.stringify(data, null, 2);
+                } else {
+                    responseDiv.className = 'response error';
+                    responseDiv.textContent = JSON.stringify(data, null, 2);
+                }
+            } catch (error) {
+                responseDiv.className = 'response error';
+                responseDiv.textContent = 'Error: ' + error.message;
+            }
+        }
+
+        // Create Order (Admin)
+        async function createOrder() {
+            const responseDiv = document.getElementById('createResponse');
+            if (!authToken) {
+                responseDiv.className = 'response error';
+                responseDiv.textContent = 'Please login first!';
+                return;
+            }
+
+            responseDiv.textContent = 'Loading...';
+
+            const quantity = parseInt(document.getElementById('createQuantity').value);
+            const unitPrice = parseFloat(document.getElementById('createUnitPrice').value);
+            const deliveryCharge = parseFloat(document.getElementById('createDeliveryCharge').value);
+
+            try {
+                const response = await fetch(`${BASE_URL}/orders`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        customer_name: document.getElementById('createCustomerName').value,
+                        customer_phone: document.getElementById('createCustomerPhone').value,
+                        customer_address: document.getElementById('createCustomerAddress').value,
+                        quantity,
+                        unit_price: unitPrice,
+                        delivery_charge: deliveryCharge,
+                        subtotal: quantity * unitPrice,
+                        total: (quantity * unitPrice) + deliveryCharge
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    responseDiv.className = 'response success';
+                    responseDiv.textContent = JSON.stringify(data, null, 2);
+                } else {
+                    responseDiv.className = 'response error';
+                    responseDiv.textContent = JSON.stringify(data, null, 2);
+                }
+            } catch (error) {
+                responseDiv.className = 'response error';
+                responseDiv.textContent = 'Error: ' + error.message;
+            }
+        }
+
+        // Update Order
+        async function updateOrder() {
+            const responseDiv = document.getElementById('updateResponse');
+            if (!authToken) {
+                responseDiv.className = 'response error';
+                responseDiv.textContent = 'Please login first!';
+                return;
+            }
+
+            const id = document.getElementById('updateOrderId').value;
+            responseDiv.textContent = 'Loading...';
+
+            try {
+                const response = await fetch(`${BASE_URL}/orders/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        status: document.getElementById('updateStatus').value
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    responseDiv.className = 'response success';
+                    responseDiv.textContent = JSON.stringify(data, null, 2);
+                } else {
+                    responseDiv.className = 'response error';
+                    responseDiv.textContent = JSON.stringify(data, null, 2);
+                }
+            } catch (error) {
+                responseDiv.className = 'response error';
+                responseDiv.textContent = 'Error: ' + error.message;
+            }
+        }
+
+        // Delete Order
+        async function deleteOrder() {
+            const responseDiv = document.getElementById('deleteResponse');
+            if (!authToken) {
+                responseDiv.className = 'response error';
+                responseDiv.textContent = 'Please login first!';
+                return;
+            }
+
+            const id = document.getElementById('deleteOrderId').value;
+            if (!confirm(`Are you sure you want to delete order ${id}?`)) return;
+
+            responseDiv.textContent = 'Loading...';
+
+            try {
+                const response = await fetch(`${BASE_URL}/orders/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    responseDiv.className = 'response success';
+                    responseDiv.textContent = JSON.stringify(data, null, 2);
+                } else {
+                    responseDiv.className = 'response error';
+                    responseDiv.textContent = JSON.stringify(data, null, 2);
+                }
+            } catch (error) {
+                responseDiv.className = 'response error';
+                responseDiv.textContent = 'Error: ' + error.message;
+            }
+        }
+
+        // Dispatch Order
+        async function dispatchOrder() {
+            const responseDiv = document.getElementById('dispatchResponse');
+            if (!authToken) {
+                responseDiv.className = 'response error';
+                responseDiv.textContent = 'Please login first!';
+                return;
+            }
+
+            const id = document.getElementById('dispatchOrderId').value;
+            responseDiv.textContent = 'Loading...';
+
+            try {
+                const response = await fetch(`${BASE_URL}/orders/${id}/dispatch`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    responseDiv.className = 'response success';
+                    responseDiv.textContent = JSON.stringify(data, null, 2);
+                } else {
+                    responseDiv.className = 'response error';
+                    responseDiv.textContent = JSON.stringify(data, null, 2);
+                }
+            } catch (error) {
+                responseDiv.className = 'response error';
+                responseDiv.textContent = 'Error: ' + error.message;
+            }
+        }
+
+        // Track Order
+        async function trackOrder() {
+            const responseDiv = document.getElementById('trackResponse');
+            if (!authToken) {
+                responseDiv.className = 'response error';
+                responseDiv.textContent = 'Please login first!';
+                return;
+            }
+
+            const id = document.getElementById('trackOrderId').value;
+            responseDiv.textContent = 'Loading...';
+
+            try {
+                const response = await fetch(`${BASE_URL}/orders/${id}/track`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    responseDiv.className = 'response success';
+                    responseDiv.textContent = JSON.stringify(data, null, 2);
+                } else {
+                    responseDiv.className = 'response error';
+                    responseDiv.textContent = JSON.stringify(data, null, 2);
+                }
+            } catch (error) {
+                responseDiv.className = 'response error';
+                responseDiv.textContent = 'Error: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>
