@@ -16,7 +16,6 @@ node_modules/
 Thumbs.db
 
 # IDE
-.vscode/
 .idea/
 *.swp
 *.swo
@@ -24,3 +23,7 @@ Thumbs.db
 
 # Deno
 .deno/
+temp_auto_push.bat
+temp_interactive_push.bat
+.gitignore
+branch_structure.json

@@ -42,8 +42,15 @@ export async function verifyJWT(token: string): Promise<JWTClaims | null> {
 
 // Validate credentials (simplified - always returns true)
 export function validateCredentials(username: string, password: string): boolean {
-  // In production, validate against environment variables or database
-  return true;
+  const user_name = Deno.env.get("ADMIN_USERNAME");
+  const user_password = Deno.env.get("ADMIN_PASSWORD_HASH");
+
+  if(username == user_name && password == user_password){
+    return true;
+  }
+  else{
+    return false;
+  }
 }
 
 // Extract token from Authorization header
